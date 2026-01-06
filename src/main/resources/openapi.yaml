@@ -1,0 +1,231 @@
+openapi: 3.0.3
+info:
+  title: Customer Management API
+  description: RESTful API for managing customer data with tier calculation
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+
+paths:
+  /customers:
+    post:
+      tags:
+        - Customer Management
+      summary: Create a new customer
+      description: Creates a new customer with the provided details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+        - Customer Management
+      summary: Get customers by name or email, or get all customers
+      description: Retrieve customers based on query parameters
+      parameters:
+        - name: name
+          in: query
+          description: Customer name to search for
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: query
+          description: Customer email to search for
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponse'
+
+  /customers/{id}:
+    get:
+      tags:
+        - Customer Management
+      summary: Get customer by ID
+      description: Retrieve a customer by their unique identifier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Customer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Customer Management
+      summary: Update customer by ID
+      description: Update customer details by their unique identifier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerRequest'
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Customer Management
+      summary: Delete customer by ID
+      description: Delete a customer by their unique identifier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Customer deleted successfully
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CustomerRequest:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          description: Customer name
+          example: John Doe
+        email:
+          type: string
+          format: email
+          description: Customer email
+          example: john.doe@example.com
+        annualSpend:
+          type: number
+          format: double
+          description: Annual spend amount
+          example: 5000.00
+        lastPurchaseDate:
+          type: string
+          format: date
+          description: Last purchase date in ISO 8601 format
+          example: '2024-01-15'
+
+    CustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Customer ID
+        name:
+          type: string
+          description: Customer name
+        email:
+          type: string
+          description: Customer email
+        annualSpend:
+          type: number
+          description: Annual spend amount
+        lastPurchaseDate:
+          type: string
+          format: date
+          description: Last purchase date
+        tier:
+          type: string
+          description: Calculated membership tier
+          enum: [BRONZE, SILVER, GOLD, PLATINUM]
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        errors:
+          type: object
+          description: Field-specific validation errors
